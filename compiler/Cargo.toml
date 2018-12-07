@@ -1,0 +1,6 @@
+[package]
+name = "curie"
+version = "0.0.1"
+authors = ["Adrien Haxaire <adrien.haxaire@lunatech.com>"]
+
+[dependencies]
