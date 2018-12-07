@@ -4,14 +4,14 @@ Curie is a native lisp dialect geared towards scientific computing. Named after 
 
 Curie is dynamically typed. It is native for performance but mostly to get back to the metal and understand what happens there. It is meant to support courses, workshops, talks, articles, experiments, etc. It is _not_ meant to be used for web programming. If you want to do that, please use Clojure instead.
 
-One key feature is living in the repl, while being a native language geared towards scientific computing.
+One key feature is living in the repl, while being a scientific native language.
 
 ## Roadmap
 
 1. A working repl, written in another language (Rust for example).
 2. Emit bytecode for loading modules in the repl.
 3. Emit assembly code.
-4. Rewrite the compiler in leibniz, i.e. finish bootstrapping the compiler.
+4. Rewrite the compiler in curie, i.e. finish bootstrapping the compiler.
 
 Later on, we could:
 
