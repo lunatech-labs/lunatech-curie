@@ -1,2 +1,3 @@
 **/*.rs.bk
-compiler/target/
+compiler-rust/target/
+compiler-clojure/target/
