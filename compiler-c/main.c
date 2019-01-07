@@ -1,11 +1,26 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 int main(void)
 {
-    int c;
+  char token;
+  bool done = false;
 
-    while ((c = getchar()) != EOF) {
-        putchar(c);
-        c = getchar();
+  char buf[10] = "(+ 1 2)";
+  int i = 0;
+  while (!done) {
+    token = buf[i];;
+    switch(token) {
+    case '(':
+      i += 1;
+      break;
+    case ')':
+      done = true;
+      break;
+    default:
+      printf("%c", token);
+      i += 1;
+      break;
     }
+  }
 }
