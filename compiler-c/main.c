@@ -17,21 +17,25 @@ cell* new_cell(char token)
   return c;
 }
 
-void append(char token, cell** l)
+cell* append(char token, cell* c)
 {
-  cell **cdr = l;
+  cell *cdr = NULL;
+  cell *cur = NULL;
 
-  if (*l == NULL) {
-    *l = new_cell(token);
-    return;
+  if (c == NULL) {
+    c = new_cell(token);
+    return c;
   } else {
-    cdr = &((*l)->cdr);
+    cur = c;
+    cdr = c->cdr;
     for (;;) {
-      if ((*cdr) == NULL) { 
-	*cdr = new_cell(token);
-	return;
+      if (cdr == NULL) {
+	cdr = new_cell(token);
+        cur->cdr = cdr;
+	return c;
       }
-      cdr = &((*cdr)->cdr);
+      cur = cdr;
+      cdr = cdr->cdr;
     }
   }
 }
@@ -45,28 +49,28 @@ void parse()
   int i = 0;
   int nLeftParen = 0;
   int nRightParen = 0;
-  
-  while (!done) { 
-    token = buf[i];; 
-    switch(token) { 
-    case '(': 
-      nLeftParen++; 
-      i++; 
-      break; 
-    case ')': 
-      nRightParen++; 
-      i++; 
-      if (nLeftParen == nRightParen) 
-        done = true; 
-      break; 
-    case ' ': 
-      i++; 
-      break; 
-    default: 
-      i++; 
-      break; 
-    } 
-  } 
+
+  while (!done) {
+    token = buf[i];;
+    switch(token) {
+    case '(':
+      nLeftParen++;
+      i++;
+      break;
+    case ')':
+      nRightParen++;
+      i++;
+      if (nLeftParen == nRightParen)
+        done = true;
+      break;
+    case ' ':
+      i++;
+      break;
+    default:
+      i++;
+      break;
+    }
+  }
 }
 
 typedef struct char_token {
@@ -87,7 +91,7 @@ char_token* charToken(char c) {
 }
 
 int izmars_main(void)
-{  
+{
   const char* code = "(lambda () \"Hello World\")";
 
   char_token *head = charToken(code[0]);
@@ -112,18 +116,20 @@ int izmars_main(void)
 
 int main(void)
 {
-  cell *l = NULL;
+  // const char expression = "(* (+ 1 2) 4)";
 
-  append('(', &l);
-  append('*', &l);
-  append(')', &l);
+  cell *head = new_cell('(');
+  cell *list = head;
 
-  cell* curr = l;
-  while (curr != NULL) {
-    printf("%c", curr->car);
-    curr = curr->cdr;
+  list = append('*', list);
+  list = append(')', list);
+
+  cell* cur = list;
+  while (cur != NULL) {
+    printf("%c", cur->car);
+    cur = cur->cdr;
   }
 
   // izmars_main();
-  
+
 }
