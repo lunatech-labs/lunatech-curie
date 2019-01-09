@@ -52,23 +52,20 @@ cell* parse(const char* expr)
   cell* list = NULL;
   
   while (!done) {
-    token = expr[i];;
+    token = expr[i++];
     switch(token) {
     case '(':
       list = append('(', list);
       nLeftParen++;
-      i++;
       break;
     case ')':
       list = append(')', list);
       nRightParen++;
-      i++;
       if (nLeftParen == nRightParen)
         done = true;
       break;
     default:
       list = append(token, list);
-      i++;
       break;
     }
   }
