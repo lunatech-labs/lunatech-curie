@@ -124,7 +124,8 @@ cell* parse(const char* expr)
         list = append(number, list);
         number_pos = -1;
       }
-      list = append(space, list);
+      if ((previous_token != LPAREN) && (previous_token != SPACE) && (expr[i + 2] != RPAREN))
+        list = append(space, list);
     } else {
       printf("Unknown error, token: %c\n", token);
       done = true;
@@ -139,7 +140,7 @@ cell* parse(const char* expr)
 
 int main(void)
 {
-  const char *expression = "(* (abc 1 2) 4)";
+  const char *expression = "(* ( abc  1    toto  )   4  )";
 
   cell *list = NULL;
   cell *cur = NULL;
@@ -151,6 +152,7 @@ int main(void)
     printf("%s", cur->car);
     cur = cur->cdr;
   }
+  printf("\n");
 
   return EXIT_SUCCESS;
 }
