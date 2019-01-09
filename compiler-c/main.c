@@ -2,22 +2,32 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
+const int SYMBOL_LENGTH = 32;
+const int NUMBER_LENGTH = 32;
+const char LPAREN = '(';
+const char RPAREN = ')';
+const char SPACE = ' ';
+const char MULT = '*';
+const char PLUS = '+';
 
 // should be void *car
 typedef struct cell {
-  char car;
+  char* car;
   struct cell *cdr;
 } cell;
 
-cell* new_cell(char token)
+cell* new_cell(const char* token)
 {
+  char* car = malloc(sizeof(char) * SYMBOL_LENGTH);
   cell* c = malloc(sizeof(cell));
-  c->car = token;
+  c->car = strcpy(car, token);
   c->cdr = NULL;
   return c;
 }
 
-cell* append(char token, cell* c)
+cell* append(const char* token, cell* c)
 {
   cell *cdr = NULL;
   cell *cur = NULL;
@@ -42,32 +52,86 @@ cell* append(char token, cell* c)
 
 cell* parse(const char* expr)
 {
-  char token;
+  char token, previous_token;
   bool done = false;
+  char symbol[SYMBOL_LENGTH];
+  int symbol_pos = -1;
 
+  char number[NUMBER_LENGTH];
+  int number_pos = -1;
+  
+  const char* lparen = "(";
+  const char* rparen = ")";
+  const char* mult = "*";
+  const char* plus = "+";
+  const char* space = " ";
+  
   int i = 0;
   int nLeftParen = 0;
   int nRightParen = 0;
 
   cell* list = NULL;
-  
+
+  token = expr[0];
+  previous_token = token;
   while (!done) {
-    token = expr[i++];
-    switch(token) {
-    case '(':
-      list = append('(', list);
-      nLeftParen++;
-      break;
-    case ')':
-      list = append(')', list);
+    if (token == '\0') {
+      done = true;
+    } else if (token == LPAREN) {
+      list = append(lparen, list);
+    } else if (token == MULT) {
+      list = append(mult, list);
+    } else if (token == PLUS) {
+      list = append(plus, list);
+    } else if ((symbol_pos > -1) && isalnum(token)) {
+      symbol_pos++;
+      symbol[symbol_pos] = token;
+      symbol[symbol_pos + 1] = '\0';     
+    } else if ((symbol_pos < 0) && isalpha(token)) {
+      if ((previous_token == LPAREN) || (previous_token == SPACE)) {
+        symbol_pos = 0;
+        symbol[symbol_pos] = token;
+        symbol[symbol_pos + 1] = '\0';
+      } else {
+        printf("token %c cannot follow token %c\n", token, previous_token);
+      }
+
+    } else if ((number_pos < 0) && isdigit(token)) {
+      number_pos = 0;
+      number[number_pos] = token;
+      number[number_pos + 1] = '\0';
+    } else if ((number_pos > -1) && isdigit(token)) {
+      number_pos++;
+      number[number_pos] = token;
+      number[number_pos + 1] = '\0';
+    } else if (token == RPAREN) {
       nRightParen++;
+      if (symbol_pos > -1) {
+        list = append(symbol, list);
+        symbol_pos = -1;
+      } else if (number_pos > -1) {
+        list = append(number, list);
+        number_pos = -1;
+      }
+      list = append(rparen, list);     
       if (nLeftParen == nRightParen)
         done = true;
-      break;
-    default:
-      list = append(token, list);
-      break;
+    } else if (token == SPACE) {
+      if (symbol_pos > -1) {
+        list = append(symbol, list);
+        symbol_pos = -1;
+      } else if (number_pos > -1) {
+        list = append(number, list);
+        number_pos = -1;
+      }
+      list = append(space, list);
+    } else {
+      printf("Unknown error, token: %c\n", token);
+      done = true;
     }
+    i++;
+    previous_token = token;
+    token = expr[i];
   }
 
   return list;
@@ -75,7 +139,7 @@ cell* parse(const char* expr)
 
 int main(void)
 {
-  const char *expression = "(* (+ 1 2) 4)";
+  const char *expression = "(* (abc 1 2) 4)";
 
   cell *list = NULL;
   cell *cur = NULL;
@@ -84,7 +148,7 @@ int main(void)
 
   cur = list;
   while (cur != NULL) {
-    printf("%c", cur->car);
+    printf("%s", cur->car);
     cur = cur->cdr;
   }
 
