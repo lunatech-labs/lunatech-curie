@@ -12,24 +12,23 @@ const char SPACE = ' ';
 const char MULT = '*';
 const char PLUS = '+';
 
-// should be void *car
 typedef struct cell {
-  char* car;
-  struct cell *cdr;
+  char* value;
+  struct cell *next;
 } cell;
 
 cell* new_cell(const char* token)
 {
-  char* car = malloc(sizeof(char) * SYMBOL_LENGTH);
+  char* value = malloc(sizeof(char) * SYMBOL_LENGTH);
   cell* c = malloc(sizeof(cell));
-  c->car = strcpy(car, token);
-  c->cdr = NULL;
+  c->value = strcpy(value, token);
+  c->next = NULL;
   return c;
 }
 
 cell* append(const char* token, cell* c)
 {
-  cell *cdr = NULL;
+  cell *next = NULL;
   cell *cur = NULL;
 
   if (c == NULL) {
@@ -37,15 +36,15 @@ cell* append(const char* token, cell* c)
     return c;
   } else {
     cur = c;
-    cdr = c->cdr;
+    next = c->next;
     for (;;) {
-      if (cdr == NULL) {
-	cdr = new_cell(token);
-        cur->cdr = cdr;
+      if (next == NULL) {
+	next = new_cell(token);
+        cur->next = next;
 	return c;
       }
-      cur = cdr;
-      cdr = cdr->cdr;
+      cur = next;
+      next = next->next;
     }
   }
 }
@@ -149,8 +148,8 @@ int main(void)
 
   cur = list;
   while (cur != NULL) {
-    printf("%s", cur->car);
-    cur = cur->cdr;
+    printf("%s", cur->value);
+    cur = cur->next;
   }
   printf("\n");
 
