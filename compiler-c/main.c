@@ -4,28 +4,31 @@
 #include <string.h>
 
 // should be void *car
-typedef struct list {
+typedef struct cell {
   char car;
-  struct list *cdr;
-} list;
+  struct cell *cdr;
+} cell;
 
-void append(char token, struct list** l)
+cell* new_cell(char token)
 {
-  list *cell = NULL;
-  list **cdr = l;
+  cell* c = malloc(sizeof(cell));
+  c->car = token;
+  c->cdr = NULL;
+  return c;
+}
 
-  cell = malloc(sizeof(struct list));
-  cell->car = token;
-  cell->cdr = NULL;
+void append(char token, cell** l)
+{
+  cell **cdr = l;
 
   if (*l == NULL) {
-    *l = cell;
+    *l = new_cell(token);
     return;
   } else {
     cdr = &((*l)->cdr);
     for (;;) {
       if ((*cdr) == NULL) { 
-	*cdr = cell;
+	*cdr = new_cell(token);
 	return;
       }
       cdr = &((*cdr)->cdr);
@@ -83,17 +86,8 @@ char_token* charToken(char c) {
 	return res;
 }
 
-int main(void)
-{
-  /* list *l = NULL; */
-
-  /* append('(', &l); */
-  /* append('*', &l); */
-  /* append(')', &l); */
-
-  /* printf("%c", l->cdr->cdr->car); */
-
-
+int izmars_main(void)
+{  
   const char* code = "(lambda () \"Hello World\")";
 
   char_token *head = charToken(code[0]);
@@ -114,5 +108,22 @@ int main(void)
   }
 
   return 0;
+}
+
+int main(void)
+{
+  cell *l = NULL;
+
+  append('(', &l);
+  append('*', &l);
+  append(')', &l);
+
+  cell* curr = l;
+  while (curr != NULL) {
+    printf("%c", curr->car);
+    curr = curr->cdr;
+  }
+
+  // izmars_main();
   
 }
