@@ -1,4 +1,2 @@
 **/*.rs.bk
-compiler-rust/target/
-compiler-clojure/target/
-compiler-c/a.out
+a.out
