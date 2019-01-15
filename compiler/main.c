@@ -12,166 +12,116 @@ const char SPACE = ' ';
 const char MULT = '*';
 const char PLUS = '+';
 
-typedef struct cell {
-    char* value;
-    struct cell *next;
-} cell;
+typedef enum symbol_type {CHAR, INT, DOUBLE, SEXP, IOP, DOP} symbol_type;
 
-cell* new_cell(const char* token)
-{
-    char* value = malloc(sizeof(char) * SYMBOL_LENGTH);
-    cell* c = malloc(sizeof(cell));
-    c->value = strcpy(value, token);
-    c->next = NULL;
-    return c;
-}
+typedef int (*iop)(int, int);
+typedef double (*dop)(double, double);
 
-cell* append(const char* token, cell* c)
-{
-    cell *next = NULL;
-    cell *cur = NULL;
+struct sexp;
 
-    if (c == NULL) {
-	c = new_cell(token);
-	return c;
-    } else {
-	cur = c;
-	next = c->next;
-	for (;;) {
-	    if (next == NULL) {
-		next = new_cell(token);
-		cur->next = next;
-		return c;
-	    }
-	    cur = next;
-	    next = next->next;
-	}
-    }
-}
-
-cell* parse(const char* expr)
-{
-    char token, previous_token;
-    bool done = false;
-    char symbol[SYMBOL_LENGTH];
-    int symbol_pos = -1;
-
-    char number[NUMBER_LENGTH];
-    int number_pos = -1;
-  
-    const char* lparen = "(";
-    const char* rparen = ")";
-    const char* mult = "*";
-    const char* plus = "+";
-    const char* space = " ";
-  
-    int i = 0;
-    int nLeftParen = 0;
-    int nRightParen = 0;
-
-    cell* list = NULL;
-
-    token = expr[0];
-    previous_token = token;
-    while (!done) {
-	if (token == '\0') {
-	    done = true;
-	} else if (token == LPAREN) {
-	    list = append(lparen, list);
-	} else if (token == MULT) {
-	    list = append(mult, list);
-	} else if (token == PLUS) {
-	    list = append(plus, list);
-	} else if ((symbol_pos > -1) && isalnum(token)) {
-	    symbol_pos++;
-	    symbol[symbol_pos] = token;
-	    symbol[symbol_pos + 1] = '\0';     
-	} else if ((symbol_pos < 0) && isalpha(token)) {
-	    if ((previous_token == LPAREN) || (previous_token == SPACE)) {
-		symbol_pos = 0;
-		symbol[symbol_pos] = token;
-		symbol[symbol_pos + 1] = '\0';
-	    } else {
-		printf("token %c cannot follow token %c\n", token, previous_token);
-	    }
-
-	} else if ((number_pos < 0) && isdigit(token)) {
-	    number_pos = 0;
-	    number[number_pos] = token;
-	    number[number_pos + 1] = '\0';
-	} else if ((number_pos > -1) && isdigit(token)) {
-	    number_pos++;
-	    number[number_pos] = token;
-	    number[number_pos + 1] = '\0';
-	} else if (token == RPAREN) {
-	    nRightParen++;
-	    if (symbol_pos > -1) {
-		list = append(symbol, list);
-		symbol_pos = -1;
-	    } else if (number_pos > -1) {
-		list = append(number, list);
-		number_pos = -1;
-	    }
-	    list = append(rparen, list);     
-	    if (nLeftParen == nRightParen)
-		done = true;
-	} else if (token == SPACE) {
-	    if (symbol_pos > -1) {
-		list = append(symbol, list);
-		symbol_pos = -1;
-	    } else if (number_pos > -1) {
-		list = append(number, list);
-		number_pos = -1;
-	    }
-	    if ((previous_token != LPAREN) && (previous_token != SPACE) && (expr[i + 2] != RPAREN))
-		list = append(space, list);
-	} else {
-	    printf("Unknown error, token: %c\n", token);
-	    done = true;
-	}
-	i++;
-	previous_token = token;
-	token = expr[i];
-    }
-
-    return list;
-}
-
-// let's start simple
-typedef union type {
-    int int_t;
-} type;
+typedef union value {
+    char* sval;
+    int ival;
+    double dval;
+    struct sexp* seval;
+    iop ifun;
+    dop dfun;
+} value;
 
 typedef struct sexp {
-    type* car;
+    symbol_type type;
+    value car;
     struct sexp *cdr;
 } sexp;
 
-// sexp* read(cell* list)
-// {
-// }
+sexp* new_char_sexp(const char* sval)
+{
+    char* value = malloc(sizeof(char) * SYMBOL_LENGTH);
+    sexp* s = malloc(sizeof(sexp));
+    s->type = CHAR;
+    s->car.sval = strcpy(value, sval);
+    s->cdr = NULL;
+    return s;
+}
+
+sexp* new_int_sexp(int ival)
+{
+    sexp* s = malloc(sizeof(sexp));
+    s->type = INT;
+    s->car.ival = ival;
+    s->cdr = NULL;
+    return s;
+}
+
+sexp* new_sexp_sexp(sexp* seval)
+{
+    sexp* s = malloc(sizeof(sexp));
+    s->type = SEXP;
+    s->car.seval = s;
+    s->cdr = NULL;
+    return s;
+}
+
+int plus_int(int n, int m)
+{
+    return n + m;
+}
+
+double plus_double(double x, double y)
+{
+    return x + y;
+}
+
+sexp* new_plus_int_sexp()
+{
+    sexp* s = malloc(sizeof(sexp));
+    s->type = IOP;
+    s->car.ifun = &plus_int;
+    s->cdr = NULL;
+    return s;
+    
+}
+
+bool is_lparen(const char* expr)
+{
+    return *expr == LPAREN;
+}
+
+bool is_rparen(const char* expr)
+{
+    return *expr == RPAREN;
+}
+
+bool is_symbol(const char* expr)
+{
+    if (!isalpha(expr[0]))
+	return false;
+
+    char token;
+    int i = 1;
+    while ((token = expr[i++]) != '\0') {
+	if (!isalnum(token))
+	    return false;
+    }
+    return true;
+}
+
+bool is_int(const char* expr)
+{
+    char* stopped = NULL;
+    strtol(expr, &stopped, 10);
+    return *stopped == '\0';
+}
+
+bool is_double(const char* expr)
+{
+    char* stopped = NULL;
+    strtod(expr, &stopped);
+    return *stopped == '\0';
+}
 
 int main(void)
 {
-    const char *expression = "(* ( abc  1    toto  )   4  )";
-
-    cell *list = NULL;
-    cell *cur = NULL;
-
-    sexp *s = NULL;
-  
-    list = parse(expression);
-
-    cur = list;
-    while (cur != NULL) {
-	printf("%s", cur->value);
-	cur = cur->next;
-    }
-    printf("\n");
-
-    // s = read(list);
-  
-    // result = eval(sexp);            
 
     return EXIT_SUCCESS;
 }
