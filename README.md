@@ -1,6 +1,6 @@
 # The Curie experiment
 
-Curie is a native lisp dialect geared towards scientific computing. Named after Marie Curie, yes, and also with a pun, yes. It is first an experiment on learning how to design and implement a LISP compiler. If this project lives long enough, maybe turn it into a proper language.
+Curie is a native lisp dialect geared towards scientific computing and embedded systems. Named after Marie Curie, yes, and also with a pun, yes. It is first an experiment on learning how to design and implement a LISP compiler. If this project lives long enough, maybe turn it into a proper language.
 
 Curie is dynamically typed. It is native for performance but mostly to get back to the metal and understand what happens there. It is meant to support courses, workshops, talks, articles, experiments, etc. It is _not_ meant to be used for web programming. If you want to do that, please use Clojure instead.
 
