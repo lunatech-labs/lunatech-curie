@@ -72,16 +72,6 @@ double plus_double(double x, double y)
     return x + y;
 }
 
-sexp* new_plus_int_sexp()
-{
-    sexp* s = malloc(sizeof(sexp));
-    s->type = IOP;
-    s->car.ifun = &plus_int;
-    s->cdr = NULL;
-    return s;
-    
-}
-
 bool is_lparen(const char* expr)
 {
     return *expr == LPAREN;
@@ -119,6 +109,8 @@ bool is_double(const char* expr)
     strtod(expr, &stopped);
     return *stopped == '\0';
 }
+
+
 
 int main(void)
 {
